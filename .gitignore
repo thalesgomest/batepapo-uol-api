@@ -1,0 +1,10 @@
+# dependencies
+/node_modules
+
+# formatters config
+.editorconfig
+
+# others
+/front-bate-papo-uol
+projeto12-batepapo-uol-api.wakatime-project
+
