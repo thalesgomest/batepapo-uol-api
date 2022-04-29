@@ -19,7 +19,17 @@ mongoClient.connect().then(() => {
     console.log(chalk.bold.red('Conected to MongoDB'));
 });
 
-app.get('/participants', (req, res) => {});
+app.get('/participants', async (req, res) => {
+    try {
+        const participants = await db
+            .collection('participants')
+            .find()
+            .toArray();
+        res.send(participants);
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+});
 
 app.get('/messages', async (req, res) => {
     try {
