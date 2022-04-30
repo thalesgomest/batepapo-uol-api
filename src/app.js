@@ -101,7 +101,8 @@ app.post('/participants', async (req, res) => {
                     type: 'status',
                     time: dayjs().format('HH:mm:ss'),
                 });
-                res.sendStatus(201);
+                const sanitizedUser = { name: stripHtml(name).result.trim() };
+                res.status(201).send(sanitizedUser);
             }
         } catch (err) {
             console.log('Request error: ', err);
@@ -123,8 +124,9 @@ app.post('/messages', async (req, res) => {
             res.status(422).send(
                 bodyValidation.error.details.map((detail) => detail.message)
             );
+        } else {
+            res.sendStatus(422);
         }
-        res.sendStatus(422);
     } else {
         try {
             const message = await db.collection('messages').insertOne({
@@ -166,6 +168,7 @@ app.post('/status', async (req, res) => {
 app.delete('/messages/:id', async (req, res) => {
     const { id } = req.params;
     const { user } = req.headers;
+
     try {
         const message = await db
             .collection('messages')
@@ -184,6 +187,46 @@ app.delete('/messages/:id', async (req, res) => {
         }
     } catch (err) {
         console.log(err);
+    }
+});
+
+app.put('/messages/:id', async (req, res) => {
+    const { id } = req.params;
+    const { user } = req.headers;
+    const bodyValidation = messageBodySchema.validate(req.body, {
+        abortEarly: false,
+    });
+    const headerValidation = await db
+        .collection('participants')
+        .findOne({ name: user });
+    if (bodyValidation.hasOwnProperty('error') || !headerValidation) {
+        if (bodyValidation.error) {
+            res.status(422).send(
+                bodyValidation.error.details.map((detail) => detail.message)
+            );
+        } else {
+            res.sendStatus(422);
+        }
+    } else {
+        try {
+            const message = await db
+                .collection('messages')
+                .findOne({ _id: new ObjectId(id) });
+            if (message) {
+                if (message.from === user) {
+                    await db
+                        .collection('messages')
+                        .updateOne({ _id: message._id }, { $set: req.body });
+                    res.sendStatus(201);
+                } else {
+                    res.sendStatus(401);
+                }
+            } else {
+                res.sendStatus(404);
+            }
+        } catch (err) {
+            console.log(err);
+        }
     }
 });
 
