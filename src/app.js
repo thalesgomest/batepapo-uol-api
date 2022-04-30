@@ -75,7 +75,6 @@ app.get('/messages', async (req, res) => {
 
 app.post('/participants', async (req, res) => {
     let { name } = req.body;
-    name = stripHtml(name).result.trim(); //sanitizing input data
     const loginValidation = authSchema.validate(req.body, {
         abortEarly: false,
     });
@@ -92,11 +91,11 @@ app.post('/participants', async (req, res) => {
                 res.status(409).send('User already exists');
             } else {
                 await db.collection('participants').insertOne({
-                    name,
+                    name: stripHtml(name).result.trim(), //sanitizing input data
                     lastStatus: Date.now(),
                 });
                 await db.collection('messages').insertOne({
-                    from: name,
+                    from: stripHtml(name).result.trim(), //sanitizing input data
                     to: 'Todos',
                     text: 'entra na sala...',
                     type: 'status',
@@ -111,7 +110,7 @@ app.post('/participants', async (req, res) => {
 });
 
 app.post('/messages', async (req, res) => {
-    const { to, text, type } = req.body;
+    let { to, text, type } = req.body;
     const { user } = req.headers;
     const bodyValidation = messageBodySchema.validate(req.body, {
         abortEarly: false,
@@ -130,9 +129,9 @@ app.post('/messages', async (req, res) => {
         try {
             const message = await db.collection('messages').insertOne({
                 from: user,
-                to,
-                text,
-                type,
+                to: stripHtml(to).result.trim(),
+                text: stripHtml(text).result.trim(),
+                type: stripHtml(type).result.trim(),
                 time: dayjs().format('HH:mm:ss'),
             });
             res.sendStatus(201);
@@ -176,7 +175,7 @@ setInterval(async () => {
                     await db.collection('messages').insertOne({
                         from: participant.name,
                         to: 'Todos',
-                        text: `saiu da sala...`,
+                        text: `sai da sala...`,
                         type: 'status',
                         time: dayjs().format('HH:mm:ss'),
                     });
