@@ -3,7 +3,7 @@ import cors from 'cors';
 import chalk from 'chalk';
 import dayjs from 'dayjs';
 import { stripHtml } from 'string-strip-html';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import { authSchema, messageBodySchema } from './helpers/schemas/schemas.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -129,7 +129,7 @@ app.post('/messages', async (req, res) => {
         try {
             const message = await db.collection('messages').insertOne({
                 from: user,
-                to: stripHtml(to).result.trim(),
+                to: stripHtml(to).result.trim(), //sanitizing message data
                 text: stripHtml(text).result.trim(),
                 type: stripHtml(type).result.trim(),
                 time: dayjs().format('HH:mm:ss'),
@@ -163,8 +163,31 @@ app.post('/status', async (req, res) => {
     }
 });
 
+app.delete('/messages/:id', async (req, res) => {
+    const { id } = req.params;
+    const { user } = req.headers;
+    try {
+        const message = await db
+            .collection('messages')
+            .findOne({ _id: new ObjectId(id) });
+        if (message) {
+            if (message.from === user) {
+                await db
+                    .collection('messages')
+                    .deleteOne({ _id: new ObjectId(id) });
+                res.sendStatus(200);
+            } else {
+                res.sendStatus(401);
+            }
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 setInterval(async () => {
-    // .find({ lastStatus: { $lte: Date.now() - 10000 } })
     try {
         await db
             .collection('participants')
