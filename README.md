@@ -22,7 +22,7 @@
 
 
 ## Project Description
-<p align="justify">My second project back-end was build the Bate-papo UOL API, that was one of my inicial projects with front-end - You can acess <a href="https://github.com/thalesgomest/bate-papo-uol">here</a> to see this front</p>
+<p align="justify">My second project back-end was build the Bate-papo UOL API, based in on of my inicial projects with front-end in Diven Education Bootcamp - You can acess <a href="https://github.com/thalesgomest/bate-papo-uol">here</a> to see this front</p>
 
 ## Status
 ![status-finished](https://user-images.githubusercontent.com/97575616/152926720-d042178b-24c0-4d6b-94fb-0ccbd3c082cc.svg)
