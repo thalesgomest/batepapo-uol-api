@@ -75,6 +75,9 @@ app.get('/messages', async (req, res) => {
 
 app.post('/participants', async (req, res) => {
     let { name } = req.body;
+    if (name) {
+        name = stripHtml(name).result.trim(); //sanitizing input data
+    }
     const loginValidation = authSchema.validate(req.body, {
         abortEarly: false,
     });
@@ -91,18 +94,17 @@ app.post('/participants', async (req, res) => {
                 res.status(409).send('User already exists');
             } else {
                 await db.collection('participants').insertOne({
-                    name: stripHtml(name).result.trim(), //sanitizing input data
+                    name,
                     lastStatus: Date.now(),
                 });
                 await db.collection('messages').insertOne({
-                    from: stripHtml(name).result.trim(), //sanitizing input data
+                    from: name,
                     to: 'Todos',
                     text: 'entra na sala...',
                     type: 'status',
                     time: dayjs().format('HH:mm:ss'),
                 });
-                const sanitizedUser = { name: stripHtml(name).result.trim() };
-                res.status(201).send(sanitizedUser);
+                res.status(201).send({ name });
             }
         } catch (err) {
             console.log('Request error: ', err);
