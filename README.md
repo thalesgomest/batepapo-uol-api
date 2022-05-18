@@ -41,7 +41,7 @@ $ git clone https://github.com/thalesgomest/batepapo-uol-api.git
 ```
 2. Change to project directory
 ```bash
-$ cd tweteroo
+$ cd batepapo-uol-api
 ```
 3. Install the dependencies
 ```bash
